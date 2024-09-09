@@ -6,18 +6,32 @@ import { useEffect } from 'react';
 
 export type Auth = {
   user: User | null;
-  isAuthenticatd: boolean;
+  isAuthenticated: boolean;
   login: () => void;
   logout: () => void;
 };
 
-const AUTH_PROVIDER = 'google';
-
 export const useAuth = () => {
   const [auth, setAuth] = useRecoilState(authState);
 
-  const login = async () => {
-    await supabaseClient.auth.signInWithOAuth({ provider: AUTH_PROVIDER });
+  const signUp = async (email: string, password: string): Promise<void> => {
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
+    await supabaseClient.auth.signUp({
+      email,
+      password,
+    });
+  };
+
+  const login = async (email: string, password: string) => {
+    if (!email || !password) {
+      throw new Error('Email and password are required');
+    }
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
   };
 
   const logout = () => {
@@ -34,7 +48,6 @@ export const useAuth = () => {
       }
       setAuth({
         id: user.id,
-        name: user.user_metadata.full_name,
         email: user.email ?? '',
       });
     });
@@ -46,7 +59,8 @@ export const useAuth = () => {
 
   return {
     user: auth,
-    isAuthenticatd: !!auth,
+    isAuthenticated: !!auth,
+    signUp,
     login,
     logout,
   };
