@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { CryptoData } from '../types/CryptoData';
 
-export const useCryptoData = () => {
-  const [cryptoData, setCryptoData] = useState<CryptoData | null>(null);
+const DEFAULT_CRYPTO_DATA: CryptoData = {
+  cryptoKey: null,
+  iv: null,
+  salt: null,
+};
 
-  const clearCryptoData = () => setCryptoData(null);
+export const useCryptoData = () => {
+  const [cryptoData, setCryptoData] = useState<CryptoData>(DEFAULT_CRYPTO_DATA);
+
+  const clearCryptoData = () => setCryptoData({ ...DEFAULT_CRYPTO_DATA });
 
   return { cryptoData, setCryptoData, clearCryptoData };
 };
