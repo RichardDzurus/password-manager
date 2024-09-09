@@ -1,34 +1,44 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
+import { useRecoilState } from 'recoil';
+import { idleListenersState, idleState, idleTimeoutIdState } from '../recoil/atoms/idle';
 
-const useIdle = (timeout: number, onIdle: () => void) => {
-  const [isIdle, setIsIdle] = useState(false);
-  const timeoutId = useRef<NodeJS.Timeout | null>(null);
+const TIMEOUT = 1000 * 60 * 5; // 5 minutes
+
+const useIdle = (onIdle: () => void) => {
+  const [isIdle, setIsIdle] = useRecoilState(idleState);
+  const [timeoutId, setTimeoutId] = useRecoilState(idleTimeoutIdState);
+  const [areIdleListenersSet, setAreIdleListenersSet] = useRecoilState(idleListenersState);
 
   const resetIdleTimer = () => {
     setIsIdle(false);
 
-    if (timeoutId.current) {
-      clearTimeout(timeoutId.current);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
     }
 
-    timeoutId.current = setTimeout(() => {
+    const newTimeoutId = setTimeout(() => {
       setIsIdle(true);
       onIdle();
-    }, timeout);
+    }, TIMEOUT);
+
+    setTimeoutId(newTimeoutId);
   };
 
   useEffect(() => {
+    if (areIdleListenersSet) return;
+
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
 
     events.forEach((event) => window.addEventListener(event, resetIdleTimer));
+    setAreIdleListenersSet(true);
 
     resetIdleTimer();
 
     return () => {
-      if (timeoutId.current) clearTimeout(timeoutId.current);
+      if (timeoutId) clearTimeout(timeoutId);
       events.forEach((event) => window.removeEventListener(event, resetIdleTimer));
     };
-  }, [timeout, onIdle]);
+  }, [onIdle, setTimeoutId, setIsIdle]);
 
   return isIdle;
 };
