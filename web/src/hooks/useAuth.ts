@@ -1,5 +1,5 @@
 import { useRecoilState } from 'recoil';
-import { supabaseClient } from '../providers/supabase';
+import { supabaseClient } from '../dbs/supabase';
 import { authState } from '../recoil/atoms/auth';
 import type { User } from '../types/User';
 import { useEffect } from 'react';
