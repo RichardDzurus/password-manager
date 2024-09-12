@@ -3,9 +3,9 @@ export type UUID = string;
 export type Entry = {
   id: UUID;
   user_id: UUID;
-  encrypted_data: ArrayBuffer;
-  salt: Uint8Array;
-  iv: Uint8Array;
+  encrypted_data: string;
+  salt: string;
+  iv: string;
   created_at: string;
   updated_at: string;
 };
@@ -13,9 +13,9 @@ export type Entry = {
 export type Structure = {
   id: UUID;
   user_id: UUID;
-  encrypted_data: ArrayBuffer;
-  salt: Uint8Array;
-  iv: Uint8Array;
+  encrypted_data: string;
+  salt: string;
+  iv: string;
   created_at: string;
   updated_at: string;
 };
