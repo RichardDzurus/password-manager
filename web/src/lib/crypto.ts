@@ -79,8 +79,9 @@ export const decryptData = async (
   iv: Uint8Array,
   encryptionKey: CryptoKey,
 ): Promise<string> => {
+  let decryptedData: ArrayBuffer;
   try {
-    const decryptedData = await window.crypto.subtle.decrypt(
+    decryptedData = await window.crypto.subtle.decrypt(
       {
         name: CIPHER_ALGORITHM,
         iv,
@@ -89,7 +90,7 @@ export const decryptData = async (
       encryptedData,
     );
   } catch (error) {
-    debugger;
+    console.error(error);
     throw new Error('Failed to decrypt the data');
   }
 

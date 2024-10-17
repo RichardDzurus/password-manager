@@ -16,6 +16,7 @@ const entrySchema = z
     }),
     type: z.enum(['login', 'password', 'note']),
     note: z.string().optional(),
+    url: z.string().url().optional(),
     password: z
       .string()
       .min(8, {
@@ -70,6 +71,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onSubmitForm }) => {
       username: '',
       password: '',
       note: '',
+      url: '',
     },
   });
 
@@ -78,13 +80,17 @@ const EntryForm: React.FC<EntryFormProps> = ({ onSubmitForm }) => {
     onSubmitForm(data);
   };
 
+  const onInvalidSubmit = (errors: any) => {
+    console.log('Form Invalid:', errors);
+  };
+
   const type = form.watch('type');
 
   return (
     <div>
       <h1>New Entry</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-8">
           <FormField
             control={form.control}
             name="title"
@@ -163,6 +169,19 @@ const EntryForm: React.FC<EntryFormProps> = ({ onSubmitForm }) => {
               )}
             />
           )}
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Url</FormLabel>
+                <FormControl>
+                  <Input type="text" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="note"

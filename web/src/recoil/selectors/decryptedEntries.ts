@@ -1,7 +1,13 @@
 import { selectorFamily } from 'recoil';
 import { entriesState } from '../atoms/entries'; // Import the atom storing encrypted data
 import { decryptData, getDerivedPasswordKey } from '../../lib/crypto'; // Assume a function that decrypts data
-import { EncryptedEntryData, DecryptedEntry } from '../../types/Decrypted';
+import {
+  EncryptedEntryData,
+  DecryptedEntry,
+  LoginTypeData,
+  NoteTypeData,
+  PasswordTypeData,
+} from '../../types/Decrypted';
 import { stringToArrayBuffer, stringToUintArray } from '../../lib/converts';
 
 // Define a selector family that takes an argument (e.g., the decryption key)
@@ -35,12 +41,36 @@ export const decryptedEntriesState = selectorFamily({
           const decryptedDataPointString = await decryptData(encodedData, encodedIv, passwordKey);
           const decryptedDataPoint = JSON.parse(decryptedDataPointString) as EncryptedEntryData;
 
-          return {
+          const partialDecryptedEntry: Omit<DecryptedEntry, 'data' | 'type'> = {
             id: encryptedEntry.id,
             createdAt: encryptedEntry.created_at,
             updatedAt: encryptedEntry.updated_at,
-            ...decryptedDataPoint,
+            title: decryptedDataPoint.title,
+            description: decryptedDataPoint.description,
           };
+          let decryptedEntry: DecryptedEntry;
+          if (decryptedDataPoint.type === 'login') {
+            decryptedEntry = {
+              ...partialDecryptedEntry,
+              type: 'login',
+              data: decryptedDataPoint.data as LoginTypeData,
+            };
+          } else if (decryptedDataPoint.type === 'note') {
+            decryptedEntry = {
+              ...partialDecryptedEntry,
+              type: 'note',
+              data: decryptedDataPoint.data as NoteTypeData,
+            };
+          } else if (decryptedDataPoint.type === 'password') {
+            decryptedEntry = {
+              ...partialDecryptedEntry,
+              type: 'password',
+              data: decryptedDataPoint.data as PasswordTypeData,
+            };
+          } else {
+            throw new Error('Invalid entry type');
+          }
+          return decryptedEntry;
         });
         const decryptedEntriesPromisesSettled = await Promise.allSettled(decryptedEntriesPromises);
         const decryptedEntries = decryptedEntriesPromisesSettled

@@ -40,7 +40,7 @@ type EntryData =
 
 export type EncryptedEntryData = EncryptedDataBase & EntryData;
 
-type DescryptedEntryBase = {
+type DecryptedEntryBase = {
   id: string;
   title: string;
   description: string;
@@ -48,4 +48,4 @@ type DescryptedEntryBase = {
   updatedAt: string;
 };
 
-export type DecryptedEntry = DescryptedEntryBase & EntryData;
+export type DecryptedEntry = DecryptedEntryBase & EntryData;

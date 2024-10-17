@@ -27,6 +27,12 @@ const PasswordCell: React.FC<PasswordCellProps> = ({ password, passwordState }) 
 const EntryTableRow: React.FC<EntryTableRowProps> = ({ entry }) => {
   const [passwordState, setPasswordState] = useState<PasswordState>(PasswordState.Hidden);
 
+  const togglePasswordVisibility = () => {
+    setPasswordState((localPasswordState) =>
+      localPasswordState === PasswordState.Hidden ? PasswordState.Visible : PasswordState.Hidden,
+    );
+  };
+
   return (
     <TableRow key={entry.id}>
       <TableCell className="font-medium">{entry.title}</TableCell>
@@ -37,11 +43,8 @@ const EntryTableRow: React.FC<EntryTableRowProps> = ({ entry }) => {
         <>
           <PasswordCell password={entry.data.password} passwordState={passwordState} />
           <TableCell>
-            <button
-              className="text-blue-500 hover:text-blue-700"
-              onClick={() => setPasswordState(PasswordState.Visible)}
-            >
-              Show
+            <button className="text-blue-500 hover:text-blue-700" onClick={togglePasswordVisibility}>
+              {passwordState === PasswordState.Visible ? 'Hide' : 'Show'}
             </button>
           </TableCell>
           <TableCell>

@@ -27,22 +27,29 @@ const EntriesList: React.FC = () => {
     if (!user) return;
 
     // TODO: add error handling
-    const stringifiedEntry = JSON.stringify(entry);
-    const { iv, salt, encryptedData } = await encryptDataWithPassword(masterPassword, stringifiedEntry);
-    const ivString = uintArrayToString(iv);
-    const saltString = uintArrayToString(salt);
-    const encryptedDataString = arrayBufferToString(encryptedData);
-    const date = new Date().toString();
-    const newDbEntry: Entry = {
-      id: window.crypto.randomUUID(),
-      user_id: user.id,
-      iv: ivString,
-      salt: saltString,
-      encrypted_data: encryptedDataString,
-      created_at: date,
-      updated_at: date,
-    };
-    insert('entries', newDbEntry);
+    try {
+      const { title, description, type, username, password, note, url } = entry;
+      const entryToEncrypt = { title, description, type, data: { username, password, note, url } };
+      const stringifiedEntry = JSON.stringify(entryToEncrypt);
+      const { iv, salt, encryptedData } = await encryptDataWithPassword(masterPassword, stringifiedEntry);
+      const ivString = uintArrayToString(iv);
+      const saltString = uintArrayToString(salt);
+      const encryptedDataString = arrayBufferToString(encryptedData);
+      const date = new Date().toString();
+      const newDbEntry: Entry = {
+        id: window.crypto.randomUUID(),
+        user_id: user.id,
+        iv: ivString,
+        salt: saltString,
+        encrypted_data: encryptedDataString,
+        created_at: date,
+        updated_at: date,
+      };
+
+      insert('entries', newDbEntry);
+    } catch (error) {
+      console.error(error);
+    }
     setIsNewEntryFormShown(false);
   };
 
