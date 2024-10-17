@@ -65,19 +65,33 @@ export const encryptData = async (
   return { iv, encryptedData };
 };
 
+export const encryptDataWithPassword = async (
+  password: string,
+  data: string,
+): Promise<{ iv: Uint8Array; salt: Uint8Array; encryptedData: ArrayBuffer }> => {
+  const salt = generateSalt();
+  const encryptionKey = await getDerivedPasswordKey(password, salt);
+  return encryptData(data, encryptionKey).then(({ iv, encryptedData }) => ({ iv, salt, encryptedData }));
+};
+
 export const decryptData = async (
   encryptedData: ArrayBuffer,
   iv: Uint8Array,
   encryptionKey: CryptoKey,
 ): Promise<string> => {
-  const decryptedData = await window.crypto.subtle.decrypt(
-    {
-      name: CIPHER_ALGORITHM,
-      iv,
-    },
-    encryptionKey,
-    encryptedData,
-  );
+  try {
+    const decryptedData = await window.crypto.subtle.decrypt(
+      {
+        name: CIPHER_ALGORITHM,
+        iv,
+      },
+      encryptionKey,
+      encryptedData,
+    );
+  } catch (error) {
+    debugger;
+    throw new Error('Failed to decrypt the data');
+  }
 
   const decoder = new TextDecoder();
   return decoder.decode(decryptedData);

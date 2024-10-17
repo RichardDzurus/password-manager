@@ -2,7 +2,7 @@ import { selectorFamily } from 'recoil';
 import { entriesState } from '../atoms/entries'; // Import the atom storing encrypted data
 import { decryptData, getDerivedPasswordKey } from '../../lib/crypto'; // Assume a function that decrypts data
 import { EncryptedEntryData, DecryptedEntry } from '../../types/Decrypted';
-import { stringToUintArray } from '../../lib/converts';
+import { stringToArrayBuffer, stringToUintArray } from '../../lib/converts';
 
 // Define a selector family that takes an argument (e.g., the decryption key)
 export const decryptedEntriesState = selectorFamily({
@@ -10,6 +10,13 @@ export const decryptedEntriesState = selectorFamily({
   get:
     (password: string) =>
     async ({ get }) => {
+      if (!password) {
+        return {
+          decryptedEntries: [],
+          corruptedEntryIds: [],
+          error: 'Password is required',
+        };
+      }
       const encryptedEntries = get(entriesState);
       if (!encryptedEntries)
         return {
@@ -22,8 +29,10 @@ export const decryptedEntriesState = selectorFamily({
         const decryptedEntriesPromises: Promise<DecryptedEntry>[] = encryptedEntries.map(async (encryptedEntry) => {
           const encodedSalt = stringToUintArray(encryptedEntry.salt);
           const encodedIv = stringToUintArray(encryptedEntry.iv);
+          const encodedData = stringToArrayBuffer(encryptedEntry.encrypted_data);
+
           const passwordKey = await getDerivedPasswordKey(password, encodedSalt);
-          const decryptedDataPointString = await decryptData(encryptedEntry.encrypted_data, encodedIv, passwordKey);
+          const decryptedDataPointString = await decryptData(encodedData, encodedIv, passwordKey);
           const decryptedDataPoint = JSON.parse(decryptedDataPointString) as EncryptedEntryData;
 
           return {
